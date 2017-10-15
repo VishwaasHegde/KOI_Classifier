@@ -1,0 +1,127 @@
+---
+title: "Assignment08"
+output:
+  word_document: default
+---
+#The topic of data analysis in this assignment is Astronomy.
+#Back ground: Like  our sun, other stars have planets too, and in the quest for the search of life, the planets belonging to other stars (exoplanets) is of interest, it is extremenly hard to find such planets as they are very tiny and far away, one possible way is to examine the star when a planet makes a transit, which will block the light coming from the star for a short duration of time, this phenomenon need not always be a planet, this could aswell be a binary star, dust particles, equipment error. So the challenge is to determine if it really was a planet from the statistical data that we get, therefore we categorise the output to 3 categories:
+#1. Confirmed: Confirmed that it is a planet
+#2. Candidate: May or may not be a planet
+#3. False Positive: Not a planet
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(rvest)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+install.packages("e1071_1.6-8.zip", repos = NULL, type="source")
+library(e1071)
+```
+#Set working directory
+#Read the data from a locally saved csv file
+
+```{r}
+getwd()
+table<-read.csv("cumulative.csv", header=TRUE,stringsAsFactors=FALSE)
+table
+```
+#Consider only "q1_q17_dr25_koi" class of stars as they are of the highest priority
+#Fill missing data for koi_ror, koi_prad, koi_prad, koi_teq, koi_dor for the correspoding FALSE POSITIVE and CANDIDATE
+#Assign categorical variables for FALSE POSITIVE, CANDIDATE and CONFIRMED
+```{r}
+table<-table%>%filter(koi_disp_prov=="q1_q17_dr25_koi")
+filteredTable<-table[,c("koi_disposition","koi_score","koi_ror","koi_prad","koi_teq","koi_dor")]
+
+
+indices <- filteredTable$koi_disposition=='FALSE POSITIVE'&!is.na(filteredTable$koi_ror)
+avg_ror_fp <- mean(filteredTable$koi_ror[indices])
+indices <- filteredTable$koi_disposition=='FALSE POSITIVE'&is.na(filteredTable$koi_ror)
+filteredTable$koi_ror[indices]<-avg_ror_fp
+
+indices <- filteredTable$koi_disposition=='CANDIDATE'&!is.na(filteredTable$koi_ror)
+avg_ror_c <- mean(filteredTable$koi_ror[indices])
+indices <- filteredTable$koi_disposition=='CANDIDATE'&is.na(filteredTable$koi_ror)
+filteredTable$koi_ror[indices]<-avg_ror_c
+
+
+
+indices <- filteredTable$koi_disposition=='FALSE POSITIVE'&!is.na(filteredTable$koi_prad)
+avg_prad_fp <- mean(filteredTable$koi_prad[indices])
+indices <- filteredTable$koi_disposition=='FALSE POSITIVE'&is.na(filteredTable$koi_prad)
+filteredTable$koi_prad[indices]<-avg_prad_fp
+
+indices <- filteredTable$koi_disposition=='CANDIDATE'&!is.na(filteredTable$koi_prad)
+avg_prad_c <- mean(filteredTable$koi_prad[indices])
+indices <- filteredTable$koi_disposition=='CANDIDATE'&is.na(filteredTable$koi_prad)
+filteredTable$koi_prad[indices]<-avg_prad_c
+
+
+indices <- filteredTable$koi_disposition=='FALSE POSITIVE'&!is.na(filteredTable$koi_teq)
+avg_teq_fp <- mean(filteredTable$koi_teq[indices])
+indices <- filteredTable$koi_disposition=='FALSE POSITIVE'&is.na(filteredTable$koi_teq)
+filteredTable$koi_teq[indices]<-avg_teq_fp
+
+indices <- filteredTable$koi_disposition=='CANDIDATE'&!is.na(filteredTable$koi_teq)
+avg_teq_c <- mean(filteredTable$koi_teq[indices])
+indices <- filteredTable$koi_disposition=='CANDIDATE'&is.na(filteredTable$koi_teq)
+filteredTable$koi_teq[indices]<-avg_teq_c
+
+
+indices <- filteredTable$koi_disposition=='FALSE POSITIVE'&!is.na(filteredTable$koi_dor)
+avg_dor_fp <- mean(filteredTable$koi_dor[indices])
+indices <- filteredTable$koi_disposition=='FALSE POSITIVE'&is.na(filteredTable$koi_dor)
+filteredTable$koi_dor[indices]<-avg_dor_fp
+
+indices <- filteredTable$koi_disposition=='CANDIDATE'&!is.na(filteredTable$koi_dor)
+avg_dor_c <- mean(filteredTable$koi_dor[indices])
+indices <- filteredTable$koi_disposition=='CANDIDATE'&is.na(filteredTable$koi_dor)
+filteredTable$koi_dor[indices]<-avg_dor_c
+
+
+
+filteredTable$koi_disposition[filteredTable$koi_disposition=='FALSE POSITIVE']<-2
+filteredTable$koi_disposition[ filteredTable$koi_disposition=='CANDIDATE']<-1
+filteredTable$koi_disposition[ filteredTable$koi_disposition=='CONFIRMED']<-0
+filteredTable$koi_disposition<-as.numeric(filteredTable$koi_disposition)
+
+```
+
+
+#Predict the category using Support Vector Machine (SVM) for entries greater 7000 index by training them with entried less then 7000 index
+```{r}
+values<-filteredTable$koi_disposition
+values<-values[1:7000]
+len<-length(filteredTable$koi_disposition)
+newfilteredTable<-filteredTable[c("koi_score","koi_ror","koi_prad","koi_teq","koi_dor")]
+
+trainData<-newfilteredTable[1:7000,]
+testData<-newfilteredTable[7001:len,]
+v<-7001:len
+trainData<-trainData[c("koi_score","koi_ror","koi_prad","koi_teq","koi_dor")]
+
+svm_model <- svm(values ~ .,data=trainData)
+pred <- predict(svm_model,testData)
+pred
+```
+#Accuracy of prediction
+```{r}
+count=0
+for(i in 1:length(pred)) {
+  if(pred[i]<2/3&&filteredTable$koi_disposition[7000+i]==0)
+    count<-count+1
+  else if(pred[i]>2/3&&pred[i]<4/3&&filteredTable$koi_disposition[7000+i]==1)
+    count<-count+1
+  else if(pred[i]>4/3&&filteredTable$koi_disposition[7000+i]==2)
+    count<-count+1
+}
+acc<-(count/length(pred))*100
+acc
+```
+
+#plot
+```{r}
+plot(v,filteredTable$koi_disposition[7001:8054])+plot(v,pred)
+```
