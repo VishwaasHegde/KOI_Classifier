@@ -26,8 +26,9 @@ table<-read.csv("cumulative.csv", header=TRUE,stringsAsFactors=FALSE)
 table<-table%>%filter(koi_disp_prov=="q1_q17_dr25_koi")
 filteredTable<-table[,c("koi_disposition","koi_score","koi_fpflag_nt","koi_fpflag_ss","koi_fpflag_co","koi_fpflag_ec","koi_time0bk","koi_time0","koi_impact","koi_duration","koi_depth","koi_ror","koi_srho","koi_prad","koi_sma","koi_incl","koi_teq","koi_dor","koi_ldm_coeff2","koi_ldm_coeff1","koi_max_sngle_ev","koi_max_mult_ev","koi_model_snr","koi_count","koi_num_transits","koi_tce_plnt_num","koi_quarters","koi_bin_oedp_sig","koi_steff","koi_slogg","koi_smet","koi_srad","koi_smass","ra","koi_gmag","koi_rmag","koi_imag","koi_zmag","koi_jmag","koi_hmag","koi_kmag","koi_fwm_stat_sig","koi_fwm_sra","koi_fwm_sdec","koi_fwm_srao","koi_fwm_sdeco","koi_fwm_prao","koi_fwm_pdeco","koi_dicco_mra","koi_dicco_mdec","koi_dicco_msky","koi_dikco_mra","koi_dikco_mdec","koi_dikco_msky")]
 
+length(filteredTable[,1])
 filteredTable <- na.omit(filteredTable)
-
+length(filteredTable[,1])
 filteredTable
 library(car)
 
@@ -87,7 +88,28 @@ mylogit <- glm(
 
 vif(mylogit)
 
-filteredTable_1<-filteredTable[,c("koi_disposition","koi_score","koi_fpflag_nt","koi_fpflag_ss","koi_fpflag_co","koi_fpflag_ec","koi_time0","koi_impact","koi_duration","koi_depth","koi_ror","koi_srho","koi_prad","koi_sma","koi_incl","koi_teq","koi_dor","koi_ldm_coeff1","koi_max_sngle_ev","koi_max_mult_ev","koi_model_snr","koi_count","koi_num_transits","koi_tce_plnt_num","koi_quarters","koi_bin_oedp_sig","koi_steff","koi_slogg","koi_smet","koi_srad","koi_smass","ra","koi_gmag","koi_fwm_stat_sig","koi_fwm_sdec","koi_fwm_srao","koi_fwm_sdeco","koi_fwm_prao","koi_fwm_pdeco","koi_dicco_mra","koi_dicco_mdec","koi_dicco_msky","koi_dikco_mra","koi_dikco_mdec","koi_dikco_msky")]
+
+mylogit <- glm(
+  koi_disposition ~ koi_disposition+koi_score+koi_fpflag_nt+koi_fpflag_ss+koi_fpflag_co+koi_fpflag_ec+koi_time0+koi_impact+koi_srho+koi_prad+koi_sma+koi_max_sngle_ev+koi_model_snr+koi_count+koi_tce_plnt_num+koi_quarters+koi_smet+koi_gmag+koi_fwm_sdec+koi_dicco_msky, 
+  data = filteredTable, family = "binomial"
+)
+
+
+summary(mylogit)
+
+mylogit <- glm(
+  koi_disposition ~ koi_disposition+koi_score+koi_fpflag_nt+koi_fpflag_ss+koi_fpflag_co+koi_fpflag_ec+koi_time0+koi_impact+koi_srho+koi_max_sngle_ev+koi_model_snr+koi_count+koi_tce_plnt_num+koi_quarters+koi_smet+koi_fwm_sdec+koi_dicco_msky, 
+  data = filteredTable, family = "binomial"
+)
+
+
+summary(mylogit)
+
+vif(mylogit)
+
+filteredTable_1<-filteredTable[,c("koi_disposition","koi_score","koi_fpflag_nt","koi_fpflag_ss","koi_fpflag_co","koi_fpflag_ec","koi_time0","koi_impact","koi_srho","koi_max_sngle_ev","koi_model_snr","koi_count","koi_tce_plnt_num","koi_quarters","koi_smet","koi_fwm_sdec","koi_dicco_msky")]
+
+filteredTable_1 <- na.omit(filteredTable_1)
 
 length(filteredTable_1[,1])
 View(filteredTable_1)
@@ -95,46 +117,66 @@ View(filteredTable_1)
 
 ```{r}
 values<-filteredTable_1$koi_disposition
-values<-values[1:5500]
+values<-values[1:6500]
 len<-length(filteredTable_1$koi_disposition)
-newfilteredTable<-filteredTable_1[c("koi_score","koi_fpflag_nt","koi_fpflag_ss","koi_fpflag_co","koi_fpflag_ec","koi_time0","koi_impact","koi_duration","koi_depth","koi_ror","koi_srho","koi_prad","koi_sma","koi_incl","koi_teq","koi_dor","koi_ldm_coeff1","koi_max_sngle_ev","koi_max_mult_ev","koi_model_snr","koi_count","koi_num_transits","koi_tce_plnt_num","koi_quarters","koi_bin_oedp_sig","koi_steff","koi_slogg","koi_smet","koi_srad","koi_smass","ra","koi_gmag","koi_fwm_stat_sig","koi_fwm_sdec","koi_fwm_srao","koi_fwm_sdeco","koi_fwm_prao","koi_fwm_pdeco","koi_dicco_mra","koi_dicco_mdec","koi_dicco_msky","koi_dikco_mra","koi_dikco_mdec","koi_dikco_msky")]
+newfilteredTable<-filteredTable_1[c("koi_disposition","koi_score","koi_fpflag_nt","koi_fpflag_ss","koi_fpflag_co","koi_fpflag_ec","koi_time0","koi_impact","koi_srho","koi_max_sngle_ev","koi_model_snr","koi_count","koi_tce_plnt_num","koi_quarters","koi_smet","koi_fwm_sdec","koi_dicco_msky")]
 
-
-
-trainData<-newfilteredTable[1:5500,]
-testData<-newfilteredTable[5501:len,]
-v<-5501:len
-trainData<-trainData[c("koi_score","koi_fpflag_nt","koi_fpflag_ss","koi_fpflag_co","koi_fpflag_ec","koi_time0","koi_impact","koi_duration","koi_depth","koi_ror","koi_srho","koi_prad","koi_sma","koi_incl","koi_teq","koi_dor","koi_ldm_coeff1","koi_max_sngle_ev","koi_max_mult_ev","koi_model_snr","koi_count","koi_num_transits","koi_tce_plnt_num","koi_quarters","koi_bin_oedp_sig","koi_steff","koi_slogg","koi_smet","koi_srad","koi_smass","ra","koi_gmag","koi_fwm_stat_sig","koi_fwm_sdec","koi_fwm_srao","koi_fwm_sdeco","koi_fwm_prao","koi_fwm_pdeco","koi_dicco_mra","koi_dicco_mdec","koi_dicco_msky","koi_dikco_mra","koi_dikco_mdec","koi_dikco_msky")]
+length(newfilteredTable[,1])
+trainData<-newfilteredTable[1:6500,]
+testData<-newfilteredTable[6501:len,]
+v<-6501:len
+trainData<-trainData[c("koi_disposition","koi_score","koi_fpflag_nt","koi_fpflag_ss","koi_fpflag_co","koi_fpflag_ec","koi_time0","koi_impact","koi_srho","koi_max_sngle_ev","koi_model_snr","koi_count","koi_tce_plnt_num","koi_quarters","koi_smet","koi_fwm_sdec","koi_dicco_msky")]
 
 
 
 library(ROCR)
 svm_model <- svm(values ~ .,data=trainData)
 pred <- predict(svm_model,testData)
-pred <- prediction(trainData, values)
 pred
+library(e1071)
+nb_model <- naiveBayes(values~.,data = trainData)
+nb_model
+nb_test_predict <- predict(nb_model,testData)
+nb_test_predict
+table(pred=nb_test_predict)
+
+library(randomForest)
+rf_model <- randomForest(values~.,data = trainData)
+rf_test_predict <- predict(rf_model,testData)
+rf_test_predict
 ```
 
 ```{r}
 count=0
 for(i in 1:length(pred)) {
-  if(pred[i]<0.15&&filteredTable$koi_disposition[5500+i]==0){
+  if(pred[i]<0.15&&newfilteredTable$koi_disposition[6500+i]==0){
     count<-count+1
     }
-  else if(pred[i]>0.15&&pred[i]<0.7&&filteredTable$koi_disposition[5500+i]==0.5)
+  else if(pred[i]>0.15&&pred[i]<0.7&&newfilteredTable$koi_disposition[6500+i]==0.5)
     count<-count+1
-  else if(pred[i]>0.7&&filteredTable$koi_disposition[5500+i]==1)
+  else if(pred[i]>0.7&&newfilteredTable$koi_disposition[6500+i]==1)
     count<-count+1
 }
 acc<-(count/length(pred))*100
 acc
-for(i in 1:length(pred)) {
-  print("Pred")
-  print(pred[i])
-  print("Actual")
-  print(filteredTable$koi_disposition[5500+i])
+
+count=0
+rf_test_predict
+for(i in 1:length(rf_test_predict)) {
+  if(rf_test_predict[i]<0.15&&newfilteredTable$koi_disposition[6500+i]==0){
+    count<-count+1
+    }
+  else if(rf_test_predict[i]>0.15&&rf_test_predict[i]<0.7&&newfilteredTable$koi_disposition[6500+i]==0.5)
+    count<-count+1
+  else if(rf_test_predict[i]>0.7&&newfilteredTable$koi_disposition[6500+i]==1)
+    count<-count+1
 }
+acc<-(count/length(rf_test_predict))*100
+acc
 
+plot(v,newfilteredTable$koi_disposition[6501:length(newfilteredTable[,1])])+plot(v,rf_test_predict)
+plot(v,newfilteredTable$koi_disposition[6501:length(newfilteredTable[,1])])+plot(v,pred)
 
+ggplot(data = newfilteredTable, aes(x=v, y=rf_test_predict))
 
 ```
